@@ -6,7 +6,6 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -59,10 +58,16 @@ public class TimetableView extends ViewGroup {
             R.drawable.select_course_item_indigo, R.drawable.select_course_item_teal,
             R.drawable.select_course_item_deep_orange, R.drawable.select_course_item_deep_purple,
             R.drawable.select_course_item_light_blue, R.drawable.select_course_item_light_green,
-            R.drawable.select_course_item_indigo, R.drawable.select_course_item_teal};
+            R.drawable.select_course_item_indigo, R.drawable.select_course_item_teal,
+
+            R.drawable.select_course_item_indigo, R.drawable.select_course_item_teal,
+            R.drawable.select_course_item_deep_orange, R.drawable.select_course_item_deep_purple,
+            R.drawable.select_course_item_light_blue, R.drawable.select_course_item_light_green,
+            R.drawable.select_course_item_indigo, R.drawable.select_course_item_teal
+    };
 
 
-    private String[] courseColors = new String[20];
+    private String[] courseColors = new String[30];
     private int CourseColorArrIndex = 0;
 
     private OnCourseItemClickListener mListener;
@@ -95,13 +100,12 @@ public class TimetableView extends ViewGroup {
 
         sectionWidth = dp2px(20);
         titleHeight = dp2px(30);
-        gridItemWidth = (screenWidth - sectionWidth) / MAX_DAY;
+        gridItemWidth = (screenWidth - sectionWidth) / MAX_DAY + 1;
 
         //在 ViewGroup 中,如果不设置这个属性为 false,默认是不会调用 onDraw 方法的
         setWillNotDraw(false);
 
-        //默认当前周为第一周
-        currentWeek = 1;
+        currentWeek = 0;//默认显示全部课程
     }
 
     @Override
@@ -118,7 +122,7 @@ public class TimetableView extends ViewGroup {
 
     private void drawViews(List<CourseModel> list) {
         Map<Integer, List<CourseModel>> allDays = getOneDayCourses(list);
-        for (int i = 1; i <= 7; i++) {
+        for (int i = 1; i <= MAX_DAY; i++) {
             drawOneDayCourse(i, allDays.get(i));
         }
     }
@@ -181,25 +185,20 @@ public class TimetableView extends ViewGroup {
         }
     }
 
-    /**
-     * 加载课程数据
-     */
     public void loadCourses(List<CourseModel> list) {
+        removeAllViews();
         mList.clear();
         mList.addAll(list);
-
         drawViews(mList);
         invalidate();
     }
 
     public void clear() {
+        removeAllViews();
         mList.clear();
         invalidate();
     }
 
-    /**
-     * 设置当前周
-     */
     public void setCurrentWeek(int currentWeek) {
         this.currentWeek = currentWeek;
         removeAllViews();
@@ -268,13 +267,13 @@ public class TimetableView extends ViewGroup {
             } else {
                 canvas.drawLine(0, j * gridItemWidth + titleHeight, screenWidth, j * gridItemWidth + titleHeight, mDividerPaint);
 
-                mTitlePaint.setColor(0xff444444);
                 Paint.FontMetrics fontMetrics = mTitlePaint.getFontMetrics();
                 //画文字
                 String section = String.valueOf(j);
                 float textWidth = mTitlePaint.measureText(section);
                 float cx = (float) sectionWidth / 2;
                 float cy = (j - 1) * gridItemWidth + titleHeight + gridItemWidth / 2;
+                mTitlePaint.setColor(0xff444444);
                 canvas.drawText(section, cx - textWidth / 2, cy + (fontMetrics.bottom - fontMetrics.top) / 2 - fontMetrics.bottom, mTitlePaint);
             }
         }
@@ -314,7 +313,7 @@ public class TimetableView extends ViewGroup {
      */
     private void matchCourseName(String courseName) {
         boolean isRepeat = true;
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 30; i++) {
             if (courseName.equals(courseColors[i])) {
                 isRepeat = true;
                 break;
@@ -326,19 +325,6 @@ public class TimetableView extends ViewGroup {
             courseColors[CourseColorArrIndex] = courseName;
             CourseColorArrIndex++;
         }
-    }
-
-    /**
-     * 获取数组中的课程对应的索引
-     */
-    public int getColorIndex(String courseName) {
-        int index = 0;
-        for (int i = 0; i < 20; i++) {
-            if (courseName.equals(courseColors[i])) {
-                index = i;
-            }
-        }
-        return index;
     }
 
 
@@ -357,8 +343,19 @@ public class TimetableView extends ViewGroup {
     }
 
     /**
-     * 添加课程的点击事件
+     * 获取数组中的课程对应的索引
      */
+    public int getColorIndex(String courseName) {
+        int index = 0;
+        for (int i = 0; i < 20; i++) {
+            if (courseName.equals(courseColors[i])) {
+                index = i;
+            }
+        }
+        return index;
+    }
+
+
     public void setOnCourseItemClickListener(OnCourseItemClickListener listener) {
         mListener = listener;
     }
@@ -366,6 +363,8 @@ public class TimetableView extends ViewGroup {
     public interface OnCourseItemClickListener {
         void onCourseItemClick(CourseModel course);
     }
-
-
 }
+
+
+
+
