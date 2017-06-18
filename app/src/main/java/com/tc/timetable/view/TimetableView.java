@@ -40,6 +40,7 @@ public class TimetableView extends ViewGroup {
     private int screenHeight;//屏幕高度
 
     private int gridItemWidth;//格子宽高相等
+    private int gridItemHeight;
 
     private int titleHeight;//顶部显示周几栏的高度
     private int sectionWidth;//左边显示第几节课栏的宽度
@@ -101,6 +102,7 @@ public class TimetableView extends ViewGroup {
         sectionWidth = dp2px(20);
         titleHeight = dp2px(30);
         gridItemWidth = (screenWidth - sectionWidth) / MAX_DAY + 1;
+        gridItemHeight = (screenHeight - titleHeight) / MAX_SECTION;
 
         //在 ViewGroup 中,如果不设置这个属性为 false,默认是不会调用 onDraw 方法的
         setWillNotDraw(false);
@@ -163,7 +165,7 @@ public class TimetableView extends ViewGroup {
 
             TextView tvItem = new TextView(context);
 
-            tvItem.layout(gridItemWidth * (day - 1) + sectionWidth + 1, gridItemWidth * (course.getStartSection() - 1) + 1 + titleHeight, gridItemWidth * day + sectionWidth - 1, gridItemWidth * course.getEndSection() + titleHeight - 1);
+            tvItem.layout(gridItemWidth * (day - 1) + sectionWidth + 1, gridItemHeight * (course.getStartSection() - 1) + 1 + titleHeight, gridItemWidth * day + sectionWidth - 1, gridItemHeight * course.getEndSection() + titleHeight - 1);
 
             tvItem.setTextColor(0xffffffff);
             tvItem.setTextSize(12);
@@ -265,14 +267,14 @@ public class TimetableView extends ViewGroup {
             if (j == 0) {
                 canvas.drawLine(0, titleHeight, screenWidth, titleHeight, mDividerPaint);
             } else {
-                canvas.drawLine(0, j * gridItemWidth + titleHeight, screenWidth, j * gridItemWidth + titleHeight, mDividerPaint);
+                canvas.drawLine(0, j * gridItemHeight + titleHeight, screenWidth, j * gridItemHeight + titleHeight, mDividerPaint);
 
                 Paint.FontMetrics fontMetrics = mTitlePaint.getFontMetrics();
                 //画文字
                 String section = String.valueOf(j);
                 float textWidth = mTitlePaint.measureText(section);
                 float cx = (float) sectionWidth / 2;
-                float cy = (j - 1) * gridItemWidth + titleHeight + gridItemWidth / 2;
+                float cy = (j - 1) * gridItemHeight + titleHeight + gridItemHeight / 2;
                 mTitlePaint.setColor(0xff444444);
                 canvas.drawText(section, cx - textWidth / 2, cy + (fontMetrics.bottom - fontMetrics.top) / 2 - fontMetrics.bottom, mTitlePaint);
             }
@@ -298,7 +300,16 @@ public class TimetableView extends ViewGroup {
 
         ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(dm);
 
-        return dm.heightPixels;
+        return dm.heightPixels - getStatusBarHeight();
+    }
+
+    public int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
     }
 
 
